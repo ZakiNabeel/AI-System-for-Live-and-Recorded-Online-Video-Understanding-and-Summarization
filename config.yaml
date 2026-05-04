@@ -5,7 +5,7 @@ audio:
   sample_rate: 16000
   mono: true
 speech:
-  engine: whisper
+  engine: local-whisper
   model: small.en
 frames:
   ssim_threshold: 0.92

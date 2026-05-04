@@ -18,6 +18,7 @@ def run_stt(ctx) -> None:
     transcript = transcribe(
         audio_path=audio_path if audio_path.exists() else None,
         youtube_url=ctx.run_ctx.url,
+        backend=cfg.get("engine", "local-whisper"),
         model=cfg.get("model", "small.en"),
         use_youtube_subs_if_available=True,
     )
