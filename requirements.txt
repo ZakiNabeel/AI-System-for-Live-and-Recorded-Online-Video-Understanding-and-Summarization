@@ -21,3 +21,6 @@ tenacity>=8.5.0
 requests>=2.32.3
 pytest>=8.0.0
 markdown>=3.6
+streamlit>=1.36.0
+tqdm>=4.66.4
+pandas>=2.0.0
