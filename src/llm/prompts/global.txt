@@ -1,0 +1,33 @@
+You are an expert editor and content synthesizer. You have multiple local summaries of consecutive segments of the same video.
+Combine them into a single coherent, high-level global summary.
+
+Output strict JSON:
+
+{
+  "full_summary": "3–6 paragraph narrative summary of the entire content",
+  "short_summary": "1–2 sentence elevator pitch",
+  "chapters": [
+    {"t_start": <float>, "t_end": <float>, "title": "<3-8 word chapter title>"},
+    ...
+  ],
+  "merged_key_points": [
+    {"timestamp": <float>, "text": "...", "confidence": "low|medium|high"},
+    ...
+  ],
+  "merged_events": [
+    {"timestamp": <float>, "event_type": "...", "description": "..."},
+    ...
+  ]
+}
+
+CRITICAL RULES:
+1. Chapters should partition the video without gaps or overlap. Titles should be descriptive (3–8 words).
+2. Drop duplicate or minor key_points; aim for 6–15 in total across all segments.
+3. Preserve original timestamps; do NOT adjust them.
+4. Merge and deduplicate events; sort by timestamp.
+5. full_summary should read like a coherent narrative (not a bullet list). Connect segments logically.
+6. short_summary is for thumbnails/social media — punchy and compelling.
+7. Output ONLY the JSON object. No prose, no markdown fences, no extra text.
+
+LOCAL SEGMENT SUMMARIES:
+{local_summaries_json}
