@@ -360,14 +360,16 @@ def run_pipeline_streaming(
     )
     total = len(stages)
 
+    run_id = run_ctx.run_id
+
     for i, stage in enumerate(stages):
         reason = _skip_reason(stage.name, skip, only, resume, run_ctx.manifest_path)
         if reason:
             _mark_skipped(run_ctx.manifest_path, stage.name, reason)
-            yield stage.name, (i + 1) / total
+            yield stage.name, (i + 1) / total, run_id
             continue
 
-        yield stage.name, i / total
+        yield stage.name, i / total, run_id
         t0 = time.monotonic()
         try:
             stage.func(ctx)
@@ -378,7 +380,7 @@ def run_pipeline_streaming(
             _mark_failed(run_ctx.manifest_path, stage.name, str(exc), traceback.format_exc())
             if not stage.optional:
                 raise
-        yield stage.name, (i + 1) / total
+        yield stage.name, (i + 1) / total, run_id
 
     _write_performance_report(run_ctx, {})
 

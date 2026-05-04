@@ -86,6 +86,7 @@ if run_btn or resume_btn:
 
         stage_status: dict[str, str] = {s: "pending" for s in STAGE_NAMES}
         error_placeholder = st.empty()
+        run_id_used = rid or "unknown"
 
         try:
             gen = run_pipeline_streaming(
@@ -97,7 +98,8 @@ if run_btn or resume_btn:
                 enable_qa=enable_qa,
                 domain=domain or None,
             )
-            for stage_name, fraction in gen:
+            for stage_name, fraction, actual_run_id in gen:
+                run_id_used = actual_run_id
                 stage_status[stage_name] = "running"
                 progress_bar.progress(min(fraction, 1.0))
                 status_text.markdown(f"**Running stage:** `{stage_name}`")
@@ -106,7 +108,6 @@ if run_btn or resume_btn:
                     for n, s in stage_status.items()
                 )
                 stage_table.markdown(rows)
-                # After the stage completes the generator yields again with updated fraction
                 stage_status[stage_name] = "complete"
 
             progress_bar.progress(1.0)
@@ -115,20 +116,6 @@ if run_btn or resume_btn:
         except Exception as exc:
             error_placeholder.error(f"Pipeline failed: {exc}")
             st.stop()
-
-        # ---- Display results ----
-        from src.pipeline import _manifest_path_for
-        import json
-
-        if rid:
-            mp = _manifest_path_for(rid)
-            if mp.exists():
-                data = json.loads(mp.read_text())
-                run_id_used = data.get("run_id", rid)
-            else:
-                run_id_used = rid
-        else:
-            run_id_used = "unknown"
 
         output_dir = Path("data") / "output" / run_id_used
         summary_md = output_dir / "summary.md"
