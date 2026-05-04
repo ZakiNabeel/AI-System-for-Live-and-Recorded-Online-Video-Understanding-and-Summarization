@@ -1,3 +1,7 @@
+yt-dlp>=2024.08.06
+python-dotenv>=1.0.1
+streamlink>=6.7.0
+pyyaml>=6.0.2
 faster-whisper>=1.0.3
 openai>=1.40.0
 youtube-transcript-api>=0.6.2

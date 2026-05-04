@@ -1,2 +1,2 @@
-"""Top-level package for the DIP project."""
+"""Video understanding and summarization package."""
 

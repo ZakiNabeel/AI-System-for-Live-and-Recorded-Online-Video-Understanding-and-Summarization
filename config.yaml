@@ -1,0 +1,15 @@
+ingest:
+  max_height: 720
+  chunk_seconds: 10
+audio:
+  sample_rate: 16000
+  mono: true
+speech:
+  engine: whisper
+  model: small.en
+frames:
+  ssim_threshold: 0.92
+  min_gap_sec: 1.5
+llm:
+  provider: anthropic
+  model: claude-sonnet-4-6
