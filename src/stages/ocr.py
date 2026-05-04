@@ -13,10 +13,12 @@ def run_ocr(ctx) -> None:
     # Prefer enhanced manifest when available.
     manifest_path = enhanced_manifest if enhanced_manifest.exists() else frames_manifest
 
+    captioner = ctx.config.get("vision", {}).get("captioner", "gemini")
     result = extract_visual_content(
         frames_manifest_path=manifest_path,
         output_dir=paths.intermediate,
         enable_captions=ctx.enable_captions,
+        captioner=captioner,
     )
     text_frames = sum(1 for f in result.frames if f.has_text)
     ctx.log.info(

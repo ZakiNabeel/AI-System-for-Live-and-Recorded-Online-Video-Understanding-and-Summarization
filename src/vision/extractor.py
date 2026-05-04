@@ -10,13 +10,13 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any, Literal, Sequence
 
-from .captioning import CaptionCache, caption_claude, caption_llava_local, caption_openai
+from .captioning import CaptionCache, caption_claude, caption_gemini, caption_llava_local, caption_openai
 from .errors import OCRBackendError
 from .ocr import ocr_easyocr, ocr_tesseract
 
 LOGGER = logging.getLogger(__name__)
 OCREngine = Literal["tesseract", "easyocr"]
-Captioner = Literal["claude", "openai", "llava-local"]
+Captioner = Literal["claude", "openai", "llava-local", "gemini"]
 
 
 @dataclass(frozen=True)
@@ -159,6 +159,8 @@ def _run_captioner(captioner: str, image_path: Path) -> str | None:
             return caption_openai(image_path)
         if captioner == "llava-local":
             return caption_llava_local(image_path)
+        if captioner == "gemini":
+            return caption_gemini(image_path)
     except Exception as exc:
         LOGGER.warning("captioner %s failed for %s: %s", captioner, image_path, exc)
         return None

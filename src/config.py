@@ -16,7 +16,8 @@ DEFAULT_CONFIG: dict[str, Any] = {
     "audio": {"sample_rate": 16000, "mono": True},
     "speech": {"engine": "whisper", "model": "small.en"},
     "frames": {"ssim_threshold": 0.92, "min_gap_sec": 1.5},
-    "llm": {"provider": "anthropic", "model": "claude-sonnet-4-6"},
+    "llm": {"provider": "gemini", "model": "gemini-1.5-flash"},
+    "vision": {"captioner": "gemini"},
 }
 
 
@@ -45,6 +46,7 @@ def load_config(path: Path = Path("config.yaml")) -> dict[str, Any]:
         LOGGER.warning("Config file %s not found; using defaults.", path)
 
     config["env"] = {
+        "gemini_api_key": os.getenv("GEMINI_API_KEY"),
         "anthropic_api_key": os.getenv("ANTHROPIC_API_KEY"),
         "openai_api_key": os.getenv("OPENAI_API_KEY"),
         "youtube_cookies_file": os.getenv("YOUTUBE_COOKIES_FILE")

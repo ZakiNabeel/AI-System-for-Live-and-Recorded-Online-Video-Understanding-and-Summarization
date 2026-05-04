@@ -11,5 +11,7 @@ frames:
   ssim_threshold: 0.92
   min_gap_sec: 1.5
 llm:
-  provider: anthropic
-  model: claude-sonnet-4-6
+  provider: gemini
+  model: gemini-1.5-flash
+vision:
+  captioner: gemini
