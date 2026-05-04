@@ -1,0 +1,27 @@
+You are an expert video analyst. Below is a chronological transcript of a video segment, fused
+with on-screen text (OCR) and visual descriptions.
+
+Your job is to produce a strict JSON object with this exact shape:
+
+{
+  "local_summary": "2–3 sentences summarizing this segment",
+  "key_points": [
+    {"timestamp": <seconds as float>, "text": "concise key insight", "confidence": "low|medium|high"},
+    ...
+  ],
+  "events": [
+    {"timestamp": <seconds as float>, "event_type": "topic-change|demo-start|demo-end|Q&A|decision|other", "description": "what happened"}
+  ]
+}
+
+CRITICAL RULES:
+1. Use timestamps from the input events (the t_start field).
+2. Do NOT invent facts. If a key point relies on visual content, say so explicitly.
+3. "events" should capture: topic transitions, demos starting/ending, decisions made, questions asked or answered, slides/screens introducing new sections.
+4. Key points should be actionable or memorable insights.
+5. confidence: "low" = uncertain, "medium" = fairly confident, "high" = very confident
+6. Aim for 3–7 key points and 2–5 events per segment.
+7. Output ONLY the JSON object. No prose, no markdown fences, no extra text.
+
+INPUT SEGMENT:
+{events_json}
