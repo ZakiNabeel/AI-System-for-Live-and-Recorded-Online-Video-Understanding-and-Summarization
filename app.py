@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import threading
 from pathlib import Path
 
@@ -112,6 +113,9 @@ if run_btn or resume_btn:
 
             progress_bar.progress(1.0)
             status_text.markdown("**Pipeline complete!** ✅")
+            stage_table.markdown(" | ".join(
+                f"`{n}` ✓" for n in STAGE_NAMES
+            ))
 
         except Exception as exc:
             error_placeholder.error(f"Pipeline failed: {exc}")
