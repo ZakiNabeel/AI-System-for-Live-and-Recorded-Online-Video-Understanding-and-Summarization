@@ -38,6 +38,20 @@ class Transcript:
     raw_response: dict[str, Any] | None
 
 
+@dataclass(frozen=True)
+class Sentence:
+    start: float
+    end: float
+    text: str
+    word_count: int
+    segment_indices: list[int]
+
+
+@dataclass(frozen=True)
+class AlignedTranscript(Transcript):
+    sentences: list[Sentence]
+
+
 def _word_from_dict(payload: dict[str, Any]) -> Word:
     return Word(
         start=float(payload["start"]),
@@ -56,6 +70,16 @@ def _segment_from_dict(payload: dict[str, Any]) -> TranscriptSegment:
         words=[_word_from_dict(item) for item in words_payload],
         language=str(payload["language"]),
         speaker=payload.get("speaker"),
+    )
+
+
+def _sentence_from_dict(payload: dict[str, Any]) -> Sentence:
+    return Sentence(
+        start=float(payload["start"]),
+        end=float(payload["end"]),
+        text=str(payload["text"]),
+        word_count=int(payload["word_count"]),
+        segment_indices=[int(item) for item in payload.get("segment_indices", [])],
     )
 
 
@@ -79,8 +103,7 @@ def load_transcript(path: Path) -> Transcript:
     segments = [_segment_from_dict(item) for item in payload.get("segments", [])]
     audio_path_raw = payload.get("audio_path")
     audio_path = Path(audio_path_raw) if audio_path_raw else None
-
-    return Transcript(
+    base_kwargs = dict(
         segments=segments,
         language=str(payload["language"]),
         duration_sec=float(payload["duration_sec"]),
@@ -88,4 +111,12 @@ def load_transcript(path: Path) -> Transcript:
         audio_path=audio_path,
         raw_response=payload.get("raw_response"),
     )
+
+    if "sentences" in payload:
+        return AlignedTranscript(
+            **base_kwargs,
+            sentences=[_sentence_from_dict(item) for item in payload.get("sentences", [])],
+        )
+
+    return Transcript(**base_kwargs)
 
