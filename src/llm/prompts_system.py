@@ -32,20 +32,10 @@ def load_prompt(name: str, **variables) -> str:
 
     template = prompt_path.read_text(encoding="utf-8")
 
-    # Prepare variables for formatting
-    format_vars = {}
     for key, value in variables.items():
-        if isinstance(value, str):
-            format_vars[key] = value
-        else:
-            # Convert to JSON string for complex types
-            format_vars[key] = json.dumps(value, default=str, indent=2)
-
-    try:
-        return template.format(**format_vars)
-    except KeyError as e:
-        LOGGER.warning(f"Missing variable in prompt: {e}")
-        return template
+        text = value if isinstance(value, str) else json.dumps(value, default=str, indent=2)
+        template = template.replace("{" + key + "}", text)
+    return template
 
 
 SYSTEM_BASE = """You are an expert video analyst and content summarizer. Your task is to analyze video transcripts, 
