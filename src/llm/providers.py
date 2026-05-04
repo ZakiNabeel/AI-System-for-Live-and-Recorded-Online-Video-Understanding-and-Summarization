@@ -207,7 +207,7 @@ class OllamaProvider:
 class GeminiProvider:
     """Google Gemini provider (google-genai SDK)."""
 
-    def __init__(self, model: str = "gemini-1.5-flash"):
+    def __init__(self, model: str = "gemini-2.5-flash-lite"):
         try:
             from google import genai
             from google.genai import types as genai_types
@@ -286,7 +286,7 @@ def get_provider(
         "anthropic": "claude-3-5-sonnet-20241022",
         "openai": "gpt-4o",
         "ollama": "llama2",
-        "gemini": "gemini-1.5-flash",
+        "gemini": "gemini-2.5-flash-lite",
     }
 
     if provider_name == "anthropic":

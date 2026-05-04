@@ -21,7 +21,7 @@ def caption_gemini(image_path: Path) -> str | None:
     image = Image.open(str(image_path))
 
     response = client.models.generate_content(
-        model=os.getenv("GEMINI_VISION_MODEL", "gemini-1.5-flash"),
+        model=os.getenv("GEMINI_VISION_MODEL", "gemini-2.5-flash-lite"),
         contents=[
             image,
             "Describe this video frame in one short sentence. "

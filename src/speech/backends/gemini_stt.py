@@ -37,7 +37,7 @@ _INLINE_SIZE_LIMIT = 19 * 1024 * 1024  # 19 MB
 class GeminiSTTBackend:
     """Transcribe audio using Gemini's multimodal audio understanding."""
 
-    def __init__(self, model: str = "gemini-1.5-flash") -> None:
+    def __init__(self, model: str = "gemini-2.5-flash-lite") -> None:
         try:
             from google import genai
             from google.genai import types as genai_types
