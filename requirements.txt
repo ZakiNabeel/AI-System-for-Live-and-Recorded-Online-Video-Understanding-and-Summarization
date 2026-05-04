@@ -1,0 +1,4 @@
+yt-dlp>=2024.08.06
+python-dotenv>=1.0.1
+streamlink>=6.7.0
+pyyaml>=6.0.2
