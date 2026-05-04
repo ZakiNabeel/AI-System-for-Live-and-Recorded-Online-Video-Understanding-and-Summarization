@@ -60,7 +60,7 @@ def load_visual_extraction(path: Path) -> VisualExtraction:
 
     frames = [_frame_from_dict(frame) for frame in payload.get("frames", [])]
     return VisualExtraction(
-        run_id=payload["run_id"],
+        run_id=payload.get("run_id", ""),
         frames=frames,
         total_frames=int(payload.get("total_frames", len(frames))),
         sample_rate=int(payload.get("sample_rate", 1)),

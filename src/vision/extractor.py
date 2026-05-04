@@ -53,6 +53,7 @@ def extract_visual_content(
     frames_manifest_path: Path,
     output_dir: Path,
     *,
+    run_id: str = "",
     ocr_engine: OCREngine = "tesseract",
     languages: list[str] | None = None,
     enable_captions: bool = False,
@@ -105,7 +106,7 @@ def extract_visual_content(
         captioner=captioner if enable_captions else None,
         elapsed_sec=time.perf_counter() - started,
     )
-    _write_visual_json(output_dir / "visual.json", result)
+    _write_visual_json(output_dir / "visual.json", result, run_id=run_id)
     return result
 
 
@@ -167,9 +168,10 @@ def _run_captioner(captioner: str, image_path: Path) -> str | None:
     raise ValueError(f"Unsupported captioner: {captioner}")
 
 
-def _write_visual_json(path: Path, result: VisualExtractionResult) -> None:
+def _write_visual_json(path: Path, result: VisualExtractionResult, *, run_id: str = "") -> None:
     payload = {
         "version": "1",
+        "run_id": run_id,
         "ocr_engine": result.ocr_engine,
         "captioner": result.captioner,
         "elapsed_sec": result.elapsed_sec,

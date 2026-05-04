@@ -17,6 +17,7 @@ def run_ocr(ctx) -> None:
     result = extract_visual_content(
         frames_manifest_path=manifest_path,
         output_dir=paths.intermediate,
+        run_id=ctx.run_ctx.run_id,
         enable_captions=ctx.enable_captions,
         captioner=captioner,
     )
