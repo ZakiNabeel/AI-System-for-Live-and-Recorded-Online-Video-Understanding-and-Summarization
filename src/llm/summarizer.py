@@ -91,6 +91,7 @@ def summarize(
     context_limits = {
         "anthropic": 180000,
         "openai": 120000,
+        "gemini": 800000,
         "ollama": 4000,
     }
     safe_limit = context_limits.get(provider, 8000) * 0.7  # 70% safety margin

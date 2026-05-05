@@ -10,13 +10,13 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any, Literal, Sequence
 
-from .captioning import CaptionCache, caption_claude, caption_llava_local, caption_openai
+from .captioning import CaptionCache, caption_claude, caption_gemini, caption_llava_local, caption_openai
 from .errors import OCRBackendError
 from .ocr import ocr_easyocr, ocr_tesseract
 
 LOGGER = logging.getLogger(__name__)
 OCREngine = Literal["tesseract", "easyocr"]
-Captioner = Literal["claude", "openai", "llava-local"]
+Captioner = Literal["claude", "openai", "llava-local", "gemini"]
 
 
 @dataclass(frozen=True)
@@ -53,6 +53,7 @@ def extract_visual_content(
     frames_manifest_path: Path,
     output_dir: Path,
     *,
+    run_id: str = "",
     ocr_engine: OCREngine = "tesseract",
     languages: list[str] | None = None,
     enable_captions: bool = False,
@@ -105,7 +106,7 @@ def extract_visual_content(
         captioner=captioner if enable_captions else None,
         elapsed_sec=time.perf_counter() - started,
     )
-    _write_visual_json(output_dir / "visual.json", result)
+    _write_visual_json(output_dir / "visual.json", result, run_id=run_id)
     return result
 
 
@@ -159,15 +160,18 @@ def _run_captioner(captioner: str, image_path: Path) -> str | None:
             return caption_openai(image_path)
         if captioner == "llava-local":
             return caption_llava_local(image_path)
+        if captioner == "gemini":
+            return caption_gemini(image_path)
     except Exception as exc:
         LOGGER.warning("captioner %s failed for %s: %s", captioner, image_path, exc)
         return None
     raise ValueError(f"Unsupported captioner: {captioner}")
 
 
-def _write_visual_json(path: Path, result: VisualExtractionResult) -> None:
+def _write_visual_json(path: Path, result: VisualExtractionResult, *, run_id: str = "") -> None:
     payload = {
         "version": "1",
+        "run_id": run_id,
         "ocr_engine": result.ocr_engine,
         "captioner": result.captioner,
         "elapsed_sec": result.elapsed_sec,

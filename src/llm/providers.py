@@ -204,6 +204,67 @@ class OllamaProvider:
         return payload, usage
 
 
+class GeminiProvider:
+    """Google Gemini provider (google-genai SDK)."""
+
+    def __init__(self, model: str = "gemini-2.5-flash-lite"):
+        try:
+            from google import genai
+            from google.genai import types as genai_types
+        except ImportError:
+            raise ImportError(
+                "google-genai package required: pip install google-genai"
+            )
+
+        import os
+        api_key = os.getenv("GEMINI_API_KEY")
+        if not api_key:
+            raise ValueError("GEMINI_API_KEY environment variable not set")
+
+        self._client = genai.Client(api_key=api_key)
+        self._types = genai_types
+        self.model = model
+        LOGGER.info(f"Initialized GeminiProvider with {model}")
+
+    @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10))
+    def complete_json(
+        self,
+        system: str,
+        user: str,
+        *,
+        max_tokens: int = 4096,
+        temperature: float = 0.2,
+    ) -> tuple[dict[str, Any], dict[str, int]]:
+        """Call Gemini and parse a JSON response."""
+        LOGGER.debug(f"Calling {self.model} (max_tokens={max_tokens})")
+
+        response = self._client.models.generate_content(
+            model=self.model,
+            contents=user,
+            config=self._types.GenerateContentConfig(
+                system_instruction=system,
+                response_mime_type="application/json",
+                temperature=temperature,
+                max_output_tokens=max_tokens,
+            ),
+        )
+        text = (getattr(response, "text", "") or "").strip()
+
+        meta = getattr(response, "usage_metadata", None)
+        usage = {
+            "input_tokens": getattr(meta, "prompt_token_count", 0) or 0,
+            "output_tokens": getattr(meta, "candidates_token_count", 0) or 0,
+        }
+
+        try:
+            payload = strip_and_parse_json(text)
+        except LLMOutputParseError as e:
+            LOGGER.error(f"Failed to parse Gemini response: {e.text[:200]}")
+            raise
+
+        return payload, usage
+
+
 def get_provider(
     provider_name: str,
     model: str | None = None,
@@ -212,7 +273,7 @@ def get_provider(
     Factory function to get a provider instance.
 
     Args:
-        provider_name: "anthropic", "openai", or "ollama"
+        provider_name: "anthropic", "openai", "ollama", or "gemini"
         model: Override default model
 
     Returns:
@@ -225,6 +286,7 @@ def get_provider(
         "anthropic": "claude-3-5-sonnet-20241022",
         "openai": "gpt-4o",
         "ollama": "llama2",
+        "gemini": "gemini-2.5-flash-lite",
     }
 
     if provider_name == "anthropic":
@@ -233,5 +295,7 @@ def get_provider(
         return OpenAIProvider(model or defaults["openai"])
     elif provider_name == "ollama":
         return OllamaProvider(model or defaults["ollama"])
+    elif provider_name == "gemini":
+        return GeminiProvider(model or defaults["gemini"])
     else:
         raise ValueError(f"Unknown provider: {provider_name}")

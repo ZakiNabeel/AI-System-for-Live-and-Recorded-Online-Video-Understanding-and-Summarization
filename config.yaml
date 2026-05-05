@@ -5,11 +5,13 @@ audio:
   sample_rate: 16000
   mono: true
 speech:
-  engine: whisper
+  engine: local-whisper
   model: small.en
 frames:
   ssim_threshold: 0.92
   min_gap_sec: 1.5
 llm:
-  provider: anthropic
-  model: claude-sonnet-4-6
+  provider: gemini
+  model: gemini-2.5-flash-lite
+vision:
+  captioner: gemini
