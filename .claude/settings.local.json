@@ -1,7 +1,36 @@
 {
   "permissions": {
     "allow": [
-      "Bash(dir \"c:\\\\Users\\\\zakin\\\\Documents\\\\DIP Project\")"
+      "Bash(dir \"c:\\\\Users\\\\zakin\\\\Documents\\\\DIP Project\")",
+      "Bash(git -C /home/sameer/Desktop/desk/university/AI-System-for-Live-and-Recorded-Online-Video-Understanding-and-Summarization branch -a)",
+      "Bash(git -C /home/sameer/Desktop/desk/university/AI-System-for-Live-and-Recorded-Online-Video-Understanding-and-Summarization log --oneline -20)",
+      "Bash(git -C /home/sameer/Desktop/desk/university/AI-System-for-Live-and-Recorded-Online-Video-Understanding-and-Summarization log --oneline --all)",
+      "Bash(git -C /home/sameer/Desktop/desk/university/AI-System-for-Live-and-Recorded-Online-Video-Understanding-and-Summarization show --stat main)",
+      "Bash(git -C /home/sameer/Desktop/desk/university/AI-System-for-Live-and-Recorded-Online-Video-Understanding-and-Summarization ls-tree --name-only -r main)",
+      "Bash(git -C /home/sameer/Desktop/desk/university/AI-System-for-Live-and-Recorded-Online-Video-Understanding-and-Summarization ls-tree --name-only -r HEAD)",
+      "Bash(git -C /home/sameer/Desktop/desk/university/AI-System-for-Live-and-Recorded-Online-Video-Understanding-and-Summarization show plan-5 --stat)",
+      "Bash(git -C /home/sameer/Desktop/desk/university/AI-System-for-Live-and-Recorded-Online-Video-Understanding-and-Summarization ls-tree --name-only -r 9affdee)",
+      "Bash(git -C /home/sameer/Desktop/desk/university/AI-System-for-Live-and-Recorded-Online-Video-Understanding-and-Summarization ls-tree --name-only -r 179089d)",
+      "Bash(git -C /home/sameer/Desktop/desk/university/AI-System-for-Live-and-Recorded-Online-Video-Understanding-and-Summarization checkout plan-5)",
+      "Bash(git -C /home/sameer/Desktop/desk/university/AI-System-for-Live-and-Recorded-Online-Video-Understanding-and-Summarization merge main --no-edit)",
+      "Bash(git -C /home/sameer/Desktop/desk/university/AI-System-for-Live-and-Recorded-Online-Video-Understanding-and-Summarization log --oneline remotes/origin/main)",
+      "Bash(git -C /home/sameer/Desktop/desk/university/AI-System-for-Live-and-Recorded-Online-Video-Understanding-and-Summarization merge remotes/origin/main --no-edit)",
+      "Bash(python3 -m src.pipeline --help)",
+      "Bash(python3 -c \"from src.pipeline_live import run_live_pipeline; print\\('pipeline_live import OK'\\)\")",
+      "Bash(python3 -c \"from src.stages.ingest import locate_video; from src.stages.format import run_format; print\\('all stage imports OK'\\)\")",
+      "Bash(git -C /home/sameer/Desktop/desk/university/AI-System-for-Live-and-Recorded-Online-Video-Understanding-and-Summarization status)",
+      "Bash(git -C /home/sameer/Desktop/desk/university/AI-System-for-Live-and-Recorded-Online-Video-Understanding-and-Summarization add pytest.ini requirements.txt app.py src/pipeline.py src/pipeline_live.py src/stages/ tests/pipeline/ tests/test_pipeline.py tests/test_pipeline_e2e.py tests/test_pipeline_resume.py)",
+      "Bash(git -C /home/sameer/Desktop/desk/university/AI-System-for-Live-and-Recorded-Online-Video-Understanding-and-Summarization commit -m ' *)",
+      "Bash(pip3 install *)",
+      "Bash(kill %1)",
+      "Bash(python3 -c \"import google.generativeai; print\\('google-generativeai OK'\\)\")",
+      "Bash(python3 -c \"from google import genai; print\\('google-genai OK'\\)\")",
+      "Bash(python3 -c \"import google.generativeai; print\\('old genai OK'\\)\")",
+      "Bash(python3 -c ' *)",
+      "Bash(python3 -m pytest tests/test_pipeline.py tests/test_pipeline_resume.py -q)",
+      "Bash(git -C /home/sameer/Desktop/desk/university/AI-System-for-Live-and-Recorded-Online-Video-Understanding-and-Summarization add config.yaml requirements.txt src/config.py src/llm/providers.py src/stages/ocr.py src/vision/captioning/__init__.py src/vision/captioning/gemini_captioner.py src/vision/extractor.py .env.example)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)"
     ]
   }
 }
