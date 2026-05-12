@@ -1,0 +1,32 @@
+flowchart LR
+    A([Live Stream URL]) --> B[Stream Resolver\nstreamlink + yt-dlp]
+    B --> C[ffmpeg Chunker\n10-second rolling chunks]
+    C --> D[Chunk Queue\nThread-safe queue.Queue]
+
+    D --> E[Audio Extraction\nper chunk WAV]
+    E --> F[faster-whisper\nnear real-time STT]
+    F --> F2[Transcript Aligner\ntimestamp fix + sentences]
+
+    D --> G[Frame Extraction\nSSIM per chunk]
+    G --> H[DIP Enhancement\nper chunk]
+    H --> I[OCR / Captioning\nper chunk]
+
+    F2 --> J[Chunk Accumulator\nmerge aligned + visual\nwith time offset]
+    I --> J
+
+    J --> K{Every 30s?}
+    K -->|Yes| L[Fuser\nfused.json updated]
+    L --> M[LLM Summarizer\nrolling mode]
+    M --> N[Output Formatter\nformat all outputs]
+    N --> O[rolling_summary.json\nfor UI polling]
+    O --> P[Streamlit UI\n3-second auto-refresh]
+
+    K -->|No| J
+
+    Q([Stop Signal\nfrom UI or Ctrl+C]) --> C
+    Q --> R[Final Pass\nfull summarize + format]
+
+    style A fill:#4CAF50,color:#fff
+    style O fill:#2196F3,color:#fff
+    style P fill:#9C27B0,color:#fff
+    style Q fill:#f44336,color:#fff

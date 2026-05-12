@@ -1,0 +1,82 @@
+graph TD
+    UI[app.py\nStreamlit UI]
+    PL[src/pipeline.py\nMaster Pipeline\n10 stages + resume]
+    PLV[src/pipeline_live.py\nLive Pipeline\nchunk queue + worker]
+
+    subgraph Ingest [src/ingest/]
+        YD[youtube_downloader.py]
+        LC[live_chunker.py]
+        SR[stream_resolver.py]
+    end
+
+    subgraph Audio [src/audio/]
+        AE[extractor.py]
+    end
+
+    subgraph Speech [src/speech/]
+        ST[transcriber.py]
+        LW[backends/local_whisper.py]
+        OA[backends/openai_api.py]
+        YS[backends/youtube_subs.py]
+        GS[backends/gemini_stt.py]
+        AL[aligner.py]
+        SB[subtitles.py]
+    end
+
+    subgraph Vision [src/vision/]
+        FE[frame_extractor.py\nSSIM]
+        EN[enhancer.py]
+        DS[dip_steps.py\n10+ operations]
+        VE[extractor.py]
+        TE[ocr/tesseract_ocr.py]
+        EA[ocr/easyocr_ocr.py]
+        CC[captioning/claude_captioner.py]
+    end
+
+    subgraph Fusion [src/fusion/]
+        FU[fuser.py]
+        CK[chunker.py]
+    end
+
+    subgraph LLM [src/llm/]
+        SZ[summarizer.py]
+        PV[providers.py\nAnthropic/OpenAI/Ollama/Gemini]
+        PM[prompts_system.py]
+    end
+
+    subgraph Domain [src/domain/]
+        RG[registry.py]
+        ED[education.py]
+        TR[trading.py]
+        MD[medical.py]
+        LW2[law.py]
+        TS[tutorial_strategy.py]
+        PC[pseudocode.py]
+    end
+
+    subgraph Output [src/output/]
+        FO[formatter.py]
+        MR[markdown_renderer.py]
+        HR[html_renderer.py]
+        CP[chapters.py]
+        RC[report_card.py]
+    end
+
+    UI --> PL
+    UI --> PLV
+    PL --> Ingest
+    PL --> Audio
+    PL --> Speech
+    PL --> Vision
+    PL --> Fusion
+    PL --> LLM
+    PL --> Domain
+    PL --> Output
+    PLV --> Ingest
+    PLV --> Audio
+    PLV --> Speech
+    PLV --> Vision
+    PLV --> Fusion
+    PLV --> LLM
+    LLM --> Domain
+    Output --> Domain

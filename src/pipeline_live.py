@@ -279,10 +279,76 @@ def _rolling_pass(ctx: StageCtx, chunk_results: list[dict[str, Path]]) -> None:
             output_dir=paths.output,
             run_id=ctx.run_ctx.run_id,
             youtube_url=ctx.run_ctx.url,
+            domain=ctx.domain,
         )
         LOGGER.info("Rolling output written to %s", paths.output)
     except Exception as exc:
         LOGGER.warning("Format failed during rolling pass: %s", exc)
+
+    # Write rolling_summary.json for UI polling
+    _write_rolling_summary(ctx, chunk_results)
+
+
+# ---------------------------------------------------------------------------
+# Rolling state writer (for Streamlit UI polling)
+# ---------------------------------------------------------------------------
+
+def _write_rolling_summary(ctx: StageCtx, chunk_results: list[dict[str, Path]]) -> None:
+    """Write rolling_summary.json to the output dir for the UI to poll."""
+    import json as _json
+
+    paths = ctx.run_ctx.paths
+    paths.output.mkdir(parents=True, exist_ok=True)
+
+    # Read current summary text if available
+    summary_text = ""
+    transcript_tail = ""
+    summary_path = paths.intermediate / "summary.raw.json"
+    if summary_path.exists():
+        try:
+            data = _json.loads(summary_path.read_text(encoding="utf-8"))
+            summary_text = data.get("short_summary") or data.get("full_summary", "")
+            if len(summary_text) > 500:
+                summary_text = summary_text[:500] + "…"
+        except Exception:
+            pass
+
+    # Grab tail of transcript
+    aligned_path = paths.intermediate / "transcript.aligned.json"
+    if aligned_path.exists():
+        try:
+            data = _json.loads(aligned_path.read_text(encoding="utf-8"))
+            sentences = data.get("sentences", [])
+            if sentences:
+                tail = sentences[-3:]
+                transcript_tail = " ".join(s.get("text", "") for s in tail)
+        except Exception:
+            pass
+
+    # Count frames
+    frames_count = 0
+    frames_dir = paths.intermediate
+    for cr in chunk_results:
+        chunk_out = cr.get("visual")
+        if chunk_out:
+            frames_count += 1  # approximate
+
+    rolling_state = {
+        "chunk_count": len(chunk_results),
+        "last_updated": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "summary": summary_text,
+        "transcript_tail": transcript_tail,
+        "frames_extracted": frames_count,
+    }
+
+    rolling_path = paths.output / "rolling_summary.json"
+    try:
+        rolling_path.write_text(
+            _json.dumps(rolling_state, indent=2, ensure_ascii=False),
+            encoding="utf-8",
+        )
+    except Exception as exc:
+        LOGGER.warning("Could not write rolling_summary.json: %s", exc)
 
 
 # ---------------------------------------------------------------------------

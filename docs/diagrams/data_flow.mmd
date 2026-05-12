@@ -1,0 +1,54 @@
+flowchart TD
+    subgraph Input
+        V[video.mp4\nor live chunks]
+    end
+
+    subgraph Audio
+        AW[audio.wav\n16kHz mono]
+    end
+
+    subgraph Speech
+        TR[transcript.json\nSegments + word timestamps\nlanguage + duration]
+        AL[transcript.aligned.json\nSentences + SRT/WebVTT\nhallucinations removed]
+    end
+
+    subgraph Vision
+        FR[frames.json\nKeyframe metadata\nSSIM-selected PNGs]
+        EN[enhancements.json\nDIP-processed PNGs\n4 profiles applied]
+        VI[visual.json\nOCR text + bboxes\ncaptions per frame]
+    end
+
+    subgraph Fusion
+        FU[fused.json\nFusedDocument\ntime-windowed events\nspeech + visual merged]
+    end
+
+    subgraph LLM
+        SR[summary.raw.json\nSummary dataclass\nkey_points, events\nchapters, qa_pairs]
+    end
+
+    subgraph Outputs
+        MD[summary.md\nMarkdown report]
+        HTML[summary.html\nHTML with frame images]
+        JS[report.json\nFull structured data]
+        CH[chapters.txt\nTime-stamped chapters]
+        RC[report_card.md\nStats + token usage]
+        PE[performance_report.json\nPer-stage timings]
+        DX[domain extras\nstudy_notes / trade_log\nclinical_notes / case_brief\nstrategy files]
+    end
+
+    V --> AW
+    V --> FR
+    AW --> TR
+    TR --> AL
+    FR --> EN
+    EN --> VI
+    AL --> FU
+    VI --> FU
+    FU --> SR
+    SR --> MD
+    SR --> HTML
+    SR --> JS
+    SR --> CH
+    SR --> RC
+    SR --> PE
+    SR --> DX

@@ -15,6 +15,7 @@ def run_format(ctx) -> None:
         output_dir=paths.output,
         run_id=ctx.run_ctx.run_id,
         youtube_url=ctx.run_ctx.url,
+        domain=ctx.domain,
     )
     ctx.log.info("Outputs written to %s", paths.output)
     ctx.log.info("  Markdown:    %s", result.markdown)

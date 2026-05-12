@@ -18,6 +18,19 @@ from src.llm.schema import Chapter, DetectedEvent, KeyPoint, QAPair, Summary
 LOGGER = logging.getLogger(__name__)
 
 
+def _get_domain_addenda(domain: str | None) -> tuple[str, str]:
+    """Return (chunk_addendum, global_addendum) for the given domain, or ("", "")."""
+    if not domain:
+        return "", ""
+    try:
+        from src.domain.registry import get_domain, UnknownDomainError
+        profile = get_domain(domain)
+        return profile.chunk_prompt_addendum(), profile.global_prompt_addendum()
+    except Exception as exc:
+        LOGGER.warning("Could not load domain profile '%s': %s", domain, exc)
+        return "", ""
+
+
 def summarize(
     fused_path: Path,
     output_path: Path,
@@ -150,9 +163,11 @@ def _summarize_singlepass(
     """Single-pass summarization for small documents."""
     events_json = json.dumps([vars(e) for e in fused_doc.events], default=str, indent=2)
 
+    chunk_add, global_add = _get_domain_addenda(domain)
+
     # Per-chunk pass (on whole doc)
     LOGGER.info("Pass 1: Local summary")
-    system_chunk, user_chunk = get_chunk_prompt(events_json)
+    system_chunk, user_chunk = get_chunk_prompt(events_json, domain_addendum=chunk_add)
     chunk_payload, chunk_usage = llm_provider.complete_json(system_chunk, user_chunk)
     chunk_payload = validate_timestamps(chunk_payload, fused_doc.duration_sec)
 
@@ -160,7 +175,7 @@ def _summarize_singlepass(
     LOGGER.info("Pass 2: Global synthesis")
     local_summaries = [chunk_payload]
     local_summaries_json = json.dumps(local_summaries, default=str, indent=2)
-    system_global, user_global = get_global_prompt(local_summaries_json)
+    system_global, user_global = get_global_prompt(local_summaries_json, domain_addendum=global_add)
     global_payload, global_usage = llm_provider.complete_json(system_global, user_global)
     global_payload = validate_timestamps(global_payload, fused_doc.duration_sec)
 
@@ -191,6 +206,8 @@ def _summarize_multipass(
     chunks = result.chunks
     LOGGER.info(f"Created {len(chunks)} chunks")
 
+    chunk_add, global_add = _get_domain_addenda(domain)
+
     # Pass 1: Summarize each chunk
     LOGGER.info("Pass 1: Local summaries for each chunk")
     local_summaries = []
@@ -199,7 +216,7 @@ def _summarize_multipass(
     for i, chunk in enumerate(chunks):
         LOGGER.debug(f"  Chunk {i + 1}/{len(chunks)}")
         events_json = json.dumps([vars(e) for e in chunk.events], default=str, indent=2)
-        system_chunk, user_chunk = get_chunk_prompt(events_json)
+        system_chunk, user_chunk = get_chunk_prompt(events_json, domain_addendum=chunk_add)
 
         chunk_payload, chunk_usage = llm_provider.complete_json(system_chunk, user_chunk)
         chunk_payload = validate_timestamps(chunk_payload, chunk.duration_sec)
@@ -211,7 +228,7 @@ def _summarize_multipass(
     # Pass 2: Synthesize global summary
     LOGGER.info("Pass 2: Global synthesis")
     local_summaries_json = json.dumps(local_summaries, default=str, indent=2)
-    system_global, user_global = get_global_prompt(local_summaries_json)
+    system_global, user_global = get_global_prompt(local_summaries_json, domain_addendum=global_add)
     global_payload, global_usage = llm_provider.complete_json(system_global, user_global)
     global_payload = validate_timestamps(global_payload, fused_doc.duration_sec)
 

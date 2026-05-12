@@ -1,0 +1,39 @@
+flowchart TD
+    A([User: YouTube URL\nor Live Stream URL]) --> B{Mode Detection\norchestrator.py}
+    B -->|Recorded| C[YouTube Downloader\nyt-dlp]
+    B -->|Live| D[Live Stream Chunker\nffmpeg + streamlink]
+
+    C --> E[Audio Extractor\nffmpeg → 16kHz WAV]
+    D --> E
+
+    E --> F[Speech-to-Text\nfaster-whisper / OpenAI\n/ YouTube Subtitles / Gemini]
+    F --> G[Transcript Aligner\nHallucination filter\nSentence builder\nSRT / WebVTT export]
+
+    C --> H[Frame Extractor\nSSIM scene-change detection]
+    D --> H
+    H --> I[DIP Enhancer\nCLAHE · Denoise · Sharpen\n4 enhancement profiles]
+    I --> J[Visual Extractor\nOCR: Tesseract / EasyOCR\nCaptioning: Claude / GPT-4V / Gemini]
+
+    G --> K[Multimodal Fuser\nTime-windowed event merge\nToken-aware chunking]
+    J --> K
+
+    K --> L[LLM Summarizer\nAnthropic / OpenAI / Ollama\nChunked + global synthesis]
+
+    L --> M[Output Formatter\nMarkdown · HTML · JSON\nChapters · Report Card]
+
+    M --> N([Core Outputs:\nsummary.md\nsummary.html\nreport.json\nchapters.txt\nreport_card.md])
+
+    L --> O{Domain Mode?}
+    O -->|education| P[study_notes.md]
+    O -->|trading| Q[trade_log.csv]
+    O -->|medical| R[clinical_notes.md]
+    O -->|law| S[case_brief.md]
+    O -->|tutorial-strategy| T[strategy.json\nstrategy.md\nstrategy.py]
+
+    style A fill:#4CAF50,color:#fff
+    style N fill:#2196F3,color:#fff
+    style P fill:#FF9800,color:#fff
+    style Q fill:#FF9800,color:#fff
+    style R fill:#FF9800,color:#fff
+    style S fill:#FF9800,color:#fff
+    style T fill:#FF9800,color:#fff

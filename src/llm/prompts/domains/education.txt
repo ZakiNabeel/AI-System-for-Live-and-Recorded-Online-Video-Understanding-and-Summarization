@@ -1,0 +1,6 @@
+DOMAIN MODE: EDUCATION
+Additionally extract from the content and include in your JSON output at the top level:
+- "learning_objectives": array of 3-5 strings describing what a student will learn.
+- "worked_examples": array of {"timestamp": <float>, "problem_statement": "<str>", "key_steps": ["<str>", ...], "final_answer": "<str>"}.
+- "definitions": array of {"term": "<str>", "definition": "<str>", "timestamp": <float>} for new vocabulary introduced.
+Include these fields alongside the required fields in your JSON output.

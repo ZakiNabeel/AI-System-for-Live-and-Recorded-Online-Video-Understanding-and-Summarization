@@ -1,0 +1,7 @@
+DOMAIN MODE: TUTORIAL STRATEGY EXTRACTION
+Additionally extract a structured workflow from this tutorial video and include in your JSON output at the top level:
+- "task": one-sentence description of what the tutorial teaches (imperative form, e.g. "Build a REST API with FastAPI").
+- "prerequisites": array of prerequisite strings (tools, knowledge, or software needed before starting).
+- "steps": ordered array of {"step_number": <int>, "timestamp": <float>, "action": "<imperative verb phrase>", "parameters": {"<key>": "<value>"}, "expected_outcome": "<str>", "screenshot_frame_index": <int or null>}. Each step must be atomic: one action per step. Aim for 5-20 steps total.
+- "decision_points": array of {"step_number": <int>, "condition": "<str>", "branch_yes": "<str>", "branch_no": "<str>"}. Only include genuine branching logic (e.g. "if error occurs", "if using Windows vs Mac").
+Include these fields alongside the required fields in your JSON output.

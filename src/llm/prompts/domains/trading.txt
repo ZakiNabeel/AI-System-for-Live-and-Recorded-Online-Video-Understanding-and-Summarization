@@ -1,0 +1,7 @@
+DOMAIN MODE: TRADING
+Additionally extract and include in your JSON output at the top level:
+- "tickers_mentioned": array of ticker symbols (e.g. "AAPL", "BTC"). Only uppercase 1-5 letter symbols.
+- "signals": array of {"timestamp": <float>, "ticker": "<str>", "action": "buy|sell|hold|watch", "rationale": "<str>", "timeframe": "<str>"}.
+- "indicators": array of {"name": "<str>", "timestamp": <float>, "context": "<str>"} for technical indicators mentioned.
+- "risk_warnings": array of strings for any caveats or risk disclosures stated.
+Include these fields alongside the required fields in your JSON output.

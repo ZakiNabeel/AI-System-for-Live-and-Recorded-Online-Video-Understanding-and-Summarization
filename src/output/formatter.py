@@ -71,7 +71,7 @@ def format_outputs(
     youtube_url: str | None = None,
     embed_images: bool = True,
     image_max_width: int = 480,
-
+    domain: str | None = None,
 ) -> FormatResult:
     """Produce all output deliverables for a run."""
 
@@ -111,6 +111,20 @@ def format_outputs(
 
     total_size = sum(path.stat().st_size for path in [markdown_path, html_path, json_path, chapters_path, report_card_path])
 
+    # Domain post-processing — run after core outputs are on disk
+    extra_files: list[Path] = []
+    if domain:
+        try:
+            from src.domain.registry import get_domain
+            profile = get_domain(domain)
+            summary_dict = json.loads(json_path.read_text(encoding="utf-8"))
+            fused_dict = json.loads(Path(fused_path).read_text(encoding="utf-8"))
+            extra_files = profile.post_process(summary_dict, fused_dict, output_dir)
+            for p in extra_files:
+                logger.info("Domain '%s' extra: %s", domain, p)
+        except Exception as exc:
+            logger.warning("Domain post-processing failed (non-fatal): %s", exc)
+
     return FormatResult(
         markdown=markdown_path,
         html=html_path,
@@ -118,6 +132,7 @@ def format_outputs(
         chapters_txt=chapters_path,
         report_card=report_card_path,
         total_size_bytes=total_size,
+        extra_files=extra_files,
     )
 
 

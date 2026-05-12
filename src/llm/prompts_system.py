@@ -52,12 +52,13 @@ SYSTEM_GLOBAL = SYSTEM_BASE + """
 For this task, synthesize multiple segment summaries into a coherent global summary."""
 
 
-def get_chunk_prompt(events_json: str) -> tuple[str, str]:
+def get_chunk_prompt(events_json: str, domain_addendum: str = "") -> tuple[str, str]:
     """
     Get system and user messages for per-chunk summarization.
 
     Args:
         events_json: JSON string of fused events
+        domain_addendum: Extra instruction text for domain mode (injected before INPUT)
 
     Returns:
         (system_message, user_message)
@@ -83,15 +84,24 @@ def get_chunk_prompt(events_json: str) -> tuple[str, str]:
 Events JSON:
 {events_json}"""
 
+    if domain_addendum:
+        prompt_text = prompt_text.replace(
+            "INPUT:", f"{domain_addendum.strip()}\n\nINPUT:"
+        )
+        # Fallback: append at start if INPUT: marker not found
+        if domain_addendum.strip() not in prompt_text:
+            prompt_text = domain_addendum.strip() + "\n\n" + prompt_text
+
     return SYSTEM_CHUNK, prompt_text
 
 
-def get_global_prompt(local_summaries_json: str) -> tuple[str, str]:
+def get_global_prompt(local_summaries_json: str, domain_addendum: str = "") -> tuple[str, str]:
     """
     Get system and user messages for global synthesis.
 
     Args:
         local_summaries_json: JSON string of local summaries
+        domain_addendum: Extra instruction text for domain mode
 
     Returns:
         (system_message, user_message)
@@ -115,5 +125,8 @@ def get_global_prompt(local_summaries_json: str) -> tuple[str, str]:
 
 Local summaries:
 {local_summaries_json}"""
+
+    if domain_addendum:
+        prompt_text = domain_addendum.strip() + "\n\n" + prompt_text
 
     return SYSTEM_GLOBAL, prompt_text

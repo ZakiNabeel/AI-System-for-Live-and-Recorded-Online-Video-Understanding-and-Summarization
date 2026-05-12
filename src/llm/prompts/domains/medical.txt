@@ -1,0 +1,7 @@
+DOMAIN MODE: MEDICAL EDUCATION
+Additionally extract and include in your JSON output at the top level:
+- "conditions_discussed": array of {"name": "<str>", "timestamp": <float>}.
+- "treatments_mentioned": array of {"name": "<str>", "type": "drug|procedure|lifestyle", "timestamp": <float>}.
+- "evidence_levels": array of {"claim": "<str>", "level": "RCT|meta-analysis|guideline|expert-opinion", "timestamp": <float>}.
+- "key_clinical_points": array of actionable takeaway strings for clinicians.
+Include these fields alongside the required fields in your JSON output.

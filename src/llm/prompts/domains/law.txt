@@ -1,0 +1,7 @@
+DOMAIN MODE: LEGAL EDUCATION
+Additionally extract and include in your JSON output at the top level:
+- "cases_cited": array of {"case_name": "<str>", "citation": "<str>", "jurisdiction": "<str>", "timestamp": <float>, "relevance": "<str>"}.
+- "statutes": array of {"name": "<str>", "section": "<str>", "timestamp": <float>}.
+- "legal_principles": array of {"doctrine": "<str>", "explanation": "<str>", "timestamp": <float>}.
+- "arguments": array of {"position": "pro|con|neutral", "statement": "<str>", "timestamp": <float>}.
+Include these fields alongside the required fields in your JSON output.
