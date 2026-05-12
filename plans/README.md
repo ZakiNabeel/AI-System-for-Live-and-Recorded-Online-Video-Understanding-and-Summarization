@@ -34,6 +34,14 @@ Plans must generally be completed in the order listed below, because later plans
 - [Plan 5.1 — Master Pipeline](plan-5.1-master-pipeline.md)
 - [Plan 5.2 — Domain-Specific Logic (Bonus)](plan-5.2-domain-specific.md)
 
+### Module 6 — Remaining Required Work
+- [Plan 6.1 — Domain & Strategy Extraction (Implementation)](plan-6.1-domain-strategy-implementation.md)
+- [Plan 6.2 — Live Stream UI Integration](plan-6.2-live-stream-ui.md)
+- [Plan 6.3 — Demo Preparation](plan-6.3-demo-preparation.md)
+- [Plan 6.4 — Architecture Design Document & Diagrams](plan-6.4-architecture-diagram.md)
+- [Plan 6.5 — Performance Evaluation Report](plan-6.5-performance-evaluation-report.md)
+- [Plan 6.6 — Final Project Report](plan-6.6-final-project-report.md)
+
 ---
 
 ## Global Conventions
