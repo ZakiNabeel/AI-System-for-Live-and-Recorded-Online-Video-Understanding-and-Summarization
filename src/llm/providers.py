@@ -278,6 +278,62 @@ class GeminiProvider:
         return payload, usage
 
 
+class GroqProvider:
+    """Groq provider — OpenAI-compatible API with free tier."""
+
+    def __init__(self, model: str = "llama-3.1-8b-instant"):
+        try:
+            from openai import OpenAI
+        except ImportError:
+            raise ImportError("openai package required: pip install openai")
+
+        import os
+        api_key = os.getenv("GROQ_API_KEY")
+        if not api_key:
+            raise ValueError("GROQ_API_KEY environment variable not set")
+
+        self.client = OpenAI(api_key=api_key, base_url="https://api.groq.com/openai/v1")
+        self.model = model
+        LOGGER.info(f"Initialized GroqProvider with {model}")
+
+    @retry(stop=stop_after_attempt(5), wait=wait_exponential(multiplier=2, min=4, max=60))
+    def complete_json(
+        self,
+        system: str,
+        user: str,
+        *,
+        max_tokens: int = 4096,
+        temperature: float = 0.2,
+    ) -> tuple[dict[str, Any], dict[str, int]]:
+        """Call Groq and parse JSON response."""
+        LOGGER.debug(f"Calling {self.model} via Groq (max_tokens={max_tokens})")
+
+        resp = self.client.chat.completions.create(
+            model=self.model,
+            max_tokens=max_tokens,
+            temperature=temperature,
+            messages=[
+                {"role": "system", "content": system},
+                {"role": "user", "content": user},
+            ],
+            response_format={"type": "json_object"},
+        )
+
+        text = resp.choices[0].message.content.strip()
+        usage = {
+            "input_tokens": resp.usage.prompt_tokens,
+            "output_tokens": resp.usage.completion_tokens,
+        }
+
+        try:
+            payload = strip_and_parse_json(text)
+        except LLMOutputParseError as e:
+            LOGGER.error(f"Failed to parse Groq response: {e.text[:200]}")
+            raise
+
+        return payload, usage
+
+
 def get_provider(
     provider_name: str,
     model: str | None = None,
@@ -286,7 +342,7 @@ def get_provider(
     Factory function to get a provider instance.
 
     Args:
-        provider_name: "anthropic", "openai", "ollama", or "gemini"
+        provider_name: "anthropic", "openai", "ollama", "gemini", or "groq"
         model: Override default model
 
     Returns:
@@ -300,6 +356,7 @@ def get_provider(
         "openai": "gpt-4o",
         "ollama": "llama2",
         "gemini": "gemini-2.5-flash-lite",
+        "groq": "llama-3.1-8b-instant",
     }
 
     if provider_name == "anthropic":
@@ -310,5 +367,7 @@ def get_provider(
         return OllamaProvider(model or defaults["ollama"])
     elif provider_name == "gemini":
         return GeminiProvider(model or defaults["gemini"])
+    elif provider_name == "groq":
+        return GroqProvider(model or defaults["groq"])
     else:
         raise ValueError(f"Unknown provider: {provider_name}")

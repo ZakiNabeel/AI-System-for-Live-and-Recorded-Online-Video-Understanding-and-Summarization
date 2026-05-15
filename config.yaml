@@ -11,7 +11,7 @@ frames:
   ssim_threshold: 0.92
   min_gap_sec: 1.5
 llm:
-  provider: gemini
-  model: gemini-2.5-flash-lite
+  provider: groq
+  model: llama-3.1-8b-instant
 vision:
-  captioner: gemini
+  captioner: none

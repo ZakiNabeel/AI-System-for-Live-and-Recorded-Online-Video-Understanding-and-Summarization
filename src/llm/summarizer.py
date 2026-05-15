@@ -192,6 +192,15 @@ def _summarize_singlepass(
     )
 
 
+def _slim_event(e: Any) -> dict:
+    """Return only the text fields needed by the LLM — keeps prompts small."""
+    return {k: v for k, v in {
+        "t": round(getattr(e, "t_start", 0), 1),
+        "speech": getattr(e, "speech_text", "") or "",
+        "ocr": getattr(e, "visual_text", "") or "",
+    }.items() if v != ""}
+
+
 def _summarize_multipass(
     fused_doc: FusedDocument,
     llm_provider: Any,
@@ -202,7 +211,7 @@ def _summarize_multipass(
     """Multi-pass summarization for large documents."""
     # Chunk the document
     LOGGER.info("Chunking document for multi-pass processing")
-    result = chunk_events(fused_doc, max_tokens=8000, overlap_tokens=200)
+    result = chunk_events(fused_doc, max_tokens=1500, overlap_tokens=50)
     chunks = result.chunks
     LOGGER.info(f"Created {len(chunks)} chunks")
 
@@ -215,10 +224,10 @@ def _summarize_multipass(
 
     for i, chunk in enumerate(chunks):
         LOGGER.debug(f"  Chunk {i + 1}/{len(chunks)}")
-        events_json = json.dumps([vars(e) for e in chunk.events], default=str, indent=2)
+        events_json = json.dumps([_slim_event(e) for e in chunk.events], default=str)
         system_chunk, user_chunk = get_chunk_prompt(events_json, domain_addendum=chunk_add)
 
-        chunk_payload, chunk_usage = llm_provider.complete_json(system_chunk, user_chunk)
+        chunk_payload, chunk_usage = llm_provider.complete_json(system_chunk, user_chunk, max_tokens=1024)
         chunk_payload = validate_timestamps(chunk_payload, chunk.duration_sec)
         local_summaries.append(chunk_payload)
 
@@ -229,7 +238,7 @@ def _summarize_multipass(
     LOGGER.info("Pass 2: Global synthesis")
     local_summaries_json = json.dumps(local_summaries, default=str, indent=2)
     system_global, user_global = get_global_prompt(local_summaries_json, domain_addendum=global_add)
-    global_payload, global_usage = llm_provider.complete_json(system_global, user_global)
+    global_payload, global_usage = llm_provider.complete_json(system_global, user_global, max_tokens=1500)
     global_payload = validate_timestamps(global_payload, fused_doc.duration_sec)
 
     total_tokens["input"] += global_usage.get("input_tokens", 0)
