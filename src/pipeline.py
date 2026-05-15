@@ -223,7 +223,8 @@ def _write_performance_report(run_ctx: RunContext, timings: dict[str, float]) ->
     }
     path = run_ctx.paths.output / "performance_report.json"
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(report, indent=2, ensure_ascii=False), encoding="utf-8")
+    from src.json_utils import dumps as safe_dumps
+    path.write_text(safe_dumps(report, indent=2, ensure_ascii=False), encoding="utf-8")
     LOGGER.info("Performance report -> %s", path)
 
 

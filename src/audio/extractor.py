@@ -9,7 +9,22 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Iterator, Sequence
 
+import os
+import shutil
+
 from .errors import AudioExtractionError
+
+
+def _find_ffmpeg() -> str:
+    """Return ffmpeg executable path, checking PATH then WinGet install location."""
+    if shutil.which("ffmpeg"):
+        return "ffmpeg"
+    winget_base = Path(os.environ.get("LOCALAPPDATA", "")) / "Microsoft" / "WinGet" / "Packages"
+    if winget_base.exists():
+        for candidate in winget_base.glob("Gyan.FFmpeg_*"):
+            for exe in candidate.rglob("ffmpeg.exe"):
+                return str(exe)
+    return "ffmpeg"
 
 
 @dataclass(frozen=True)
@@ -115,7 +130,7 @@ def extract_audio(
 
     channels = 1 if mono else 2
     args = [
-        "ffmpeg",
+        _find_ffmpeg(),
         "-hide_banner",
         "-loglevel",
         "error",

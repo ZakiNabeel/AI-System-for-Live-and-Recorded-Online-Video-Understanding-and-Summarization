@@ -207,7 +207,7 @@ def _merge_chunk_outputs(
     merged_visual = intermediate / "visual.json"
     visual_payload = {
         "frames": combined_visuals,
-        "ocr_engine": "tesseract",
+        "ocr_engine": "easyocr",
         "captioner": None,
         "elapsed_sec": 0.0,
     }

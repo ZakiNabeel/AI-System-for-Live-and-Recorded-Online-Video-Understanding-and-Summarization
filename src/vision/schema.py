@@ -30,12 +30,17 @@ class VisualExtraction:
 
 
 def _frame_from_dict(payload: dict[str, Any]) -> Frame:
+    # Support both "path" (old schema) and "frame_path" (extractor.py schema)
+    path_val = payload.get("path") or payload.get("frame_path", "")
+    # lines may be dicts (from extractor) or plain strings
+    raw_lines = payload.get("lines", [])
+    lines = [l["text"] if isinstance(l, dict) else str(l) for l in raw_lines]
     return Frame(
         timestamp=float(payload["timestamp"]),
-        path=str(payload["path"]),
+        path=str(path_val),
         text=str(payload.get("text", "")),
         caption=payload.get("caption"),
-        lines=[str(line) for line in payload.get("lines", [])],
+        lines=lines,
     )
 
 

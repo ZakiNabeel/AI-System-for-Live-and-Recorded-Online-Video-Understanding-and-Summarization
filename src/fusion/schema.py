@@ -71,8 +71,9 @@ def save_fused_document(doc: FusedDocument, path: Path) -> None:
     payload["version"] = "1"
     payload["events"] = [asdict(event) for event in doc.events]
 
+    from src.json_utils import dump as safe_dump
     with path.open("w", encoding="utf-8") as handle:
-        json.dump(payload, handle, indent=2, ensure_ascii=False)
+        safe_dump(payload, handle, indent=2, ensure_ascii=False)
 
 
 def load_fused_document(path: Path) -> FusedDocument:

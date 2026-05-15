@@ -3,11 +3,23 @@
 from __future__ import annotations
 
 import json
+import logging
+import os
 import threading
 import time
 from pathlib import Path
 
+# Fix Windows console encoding for Unicode output (EasyOCR progress bars etc.)
+os.environ.setdefault("PYTHONIOENCODING", "utf-8")
+
 import streamlit as st
+
+# Show INFO logs in the terminal where Streamlit is launched
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+    datefmt="%H:%M:%S",
+)
 
 st.set_page_config(page_title="DIP Video Understanding", layout="wide")
 
@@ -252,7 +264,17 @@ if mode in ("recorded", "auto"):
                 stage_table.markdown(" | ".join(f"`{n}` ✓" for n in STAGE_NAMES))
 
             except Exception as exc:
-                error_placeholder.error(f"Pipeline failed: {exc}")
+                # Unwrap RetryError to show the real cause
+                cause = getattr(exc, '__cause__', None) or getattr(exc, '__context__', None)
+                real_exc = cause if cause is not None else exc
+                msg = str(real_exc)
+                if "429" in msg or "RESOURCE_EXHAUSTED" in msg:
+                    error_placeholder.error(
+                        "**Gemini API quota exceeded (429).** You've hit the free tier daily limit. "
+                        "Wait a few minutes and click **Resume (same run ID)** to continue from where it stopped."
+                    )
+                else:
+                    error_placeholder.error(f"Pipeline failed: {real_exc}")
                 st.stop()
 
             output_dir   = Path("data") / "output" / run_id_used
@@ -261,12 +283,39 @@ if mode in ("recorded", "auto"):
             report_json  = output_dir / "report.json"
             perf_report  = output_dir / "performance_report.json"
 
+            # Show log file in UI
+            log_file = Path("data") / "logs" / f"{run_id_used}.log"
+            if log_file.exists():
+                with st.expander("📋 Backend Logs", expanded=False):
+                    st.code(_read_file(log_file), language=None)
+
             st.divider()
             tab_summary, tab_report, tab_perf = st.tabs(["Summary", "Report JSON", "Performance"])
 
             with tab_summary:
                 if summary_md.exists():
-                    st.markdown(_read_file(summary_md))
+                    md_text = _read_file(summary_md)
+                    # Strip markdown image tags — we render frames below with st.image
+                    import re
+                    md_no_images = re.sub(r'!\[.*?\]\(.*?\)', '', md_text)
+                    st.markdown(md_no_images)
+
+                    # Render frames from report.json visuals section
+                    if report_json.exists():
+                        try:
+                            rj = json.loads(_read_file(report_json))
+                            frames_dir = Path("data") / "frames" / run_id_used
+                            enhanced_dir = frames_dir / "enhanced"
+                            # collect all frame pngs, prefer enhanced
+                            src_dir = enhanced_dir if enhanced_dir.exists() else frames_dir
+                            frame_files = sorted(src_dir.glob("*.png"))[:8]
+                            if frame_files:
+                                st.subheader("Extracted Frames")
+                                cols = st.columns(min(len(frame_files), 4))
+                                for col, fp in zip(cols * 2, frame_files):
+                                    col.image(str(fp), use_container_width=True, caption=fp.stem)
+                        except Exception:
+                            pass
                 elif summary_html.exists():
                     st.components.v1.html(_read_file(summary_html), height=600, scrolling=True)
                 else:

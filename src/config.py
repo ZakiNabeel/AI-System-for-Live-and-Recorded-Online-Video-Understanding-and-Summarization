@@ -16,8 +16,8 @@ DEFAULT_CONFIG: dict[str, Any] = {
     "audio": {"sample_rate": 16000, "mono": True},
     "speech": {"engine": "whisper", "model": "small.en"},
     "frames": {"ssim_threshold": 0.92, "min_gap_sec": 1.5},
-    "llm": {"provider": "gemini", "model": "gemini-2.5-flash-lite"},
-    "vision": {"captioner": "gemini"},
+    "llm": {"provider": "gemini", "model": "gemini-2.0-flash"},
+    "vision": {"captioner": "gemini", "ocr_engine": "easyocr"},
 }
 
 

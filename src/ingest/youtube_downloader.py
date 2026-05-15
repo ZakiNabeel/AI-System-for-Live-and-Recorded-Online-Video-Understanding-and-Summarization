@@ -141,11 +141,33 @@ def _build_ydl_options(
         "retries": 3,
     }
 
+    # Auto-detect ffmpeg on Windows WinGet install location if not on PATH
+    ffmpeg_bin = _find_ffmpeg_location()
+    if ffmpeg_bin:
+        opts["ffmpeg_location"] = ffmpeg_bin
+
     cookies_file = _cookies_file_from_env()
     if cookies_file:
         opts["cookiefile"] = cookies_file
 
     return opts
+
+
+def _find_ffmpeg_location() -> str | None:
+    """Return directory containing ffmpeg.exe, checking PATH then known WinGet location."""
+    import os
+    import shutil
+
+    if shutil.which("ffmpeg"):
+        return None  # Already on PATH, yt-dlp finds it automatically
+
+    # WinGet installs to a versioned path — find it dynamically
+    winget_base = Path(os.environ.get("LOCALAPPDATA", "")) / "Microsoft" / "WinGet" / "Packages"
+    if winget_base.exists():
+        for candidate in winget_base.glob("Gyan.FFmpeg_*"):
+            for ffmpeg_exe in candidate.rglob("ffmpeg.exe"):
+                return str(ffmpeg_exe.parent)
+    return None
 
 
 def _cookies_file_from_env() -> str | None:

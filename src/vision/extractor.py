@@ -10,6 +10,22 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any, Literal, Sequence
 
+
+class _NumpySafeEncoder(json.JSONEncoder):
+    """JSON encoder that converts numpy scalar types to native Python types."""
+    def default(self, obj: Any) -> Any:
+        try:
+            import numpy as np
+            if isinstance(obj, np.integer):
+                return int(obj)
+            if isinstance(obj, np.floating):
+                return float(obj)
+            if isinstance(obj, np.ndarray):
+                return obj.tolist()
+        except ImportError:
+            pass
+        return super().default(obj)
+
 from .captioning import CaptionCache, caption_claude, caption_gemini, caption_llava_local, caption_openai
 from .errors import OCRBackendError
 from .ocr import ocr_easyocr, ocr_tesseract
@@ -62,7 +78,7 @@ def extract_visual_content(
     """Run OCR and optional captioning over frames.json or enhancements.json."""
 
     started = time.perf_counter()
-    languages = languages or ["eng"]
+    languages = languages or ["en"]
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
     records = _load_frame_records(Path(frames_manifest_path))
@@ -177,7 +193,8 @@ def _write_visual_json(path: Path, result: VisualExtractionResult, *, run_id: st
         "elapsed_sec": result.elapsed_sec,
         "frames": [_visual_to_json(frame, path.parent) for frame in result.frames],
     }
-    path.write_text(json.dumps(payload, indent=2, ensure_ascii=True) + "\n", encoding="utf-8")
+    from src.json_utils import dumps as safe_dumps
+    path.write_text(safe_dumps(payload, indent=2, ensure_ascii=True) + "\n", encoding="utf-8")
 
 
 def _visual_to_json(frame: FrameVisual, output_dir: Path) -> dict[str, Any]:

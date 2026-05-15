@@ -256,6 +256,7 @@ def _payload_to_summary(
     # Extract fields with sensible defaults
     full_summary = payload.get("full_summary", "")
     short_summary = payload.get("short_summary", "")
+    title = payload.get("title", "")
 
     # Parse key points
     key_points = []
@@ -324,6 +325,7 @@ def _payload_to_summary(
         run_id=fused_doc.run_id,
         full_summary=full_summary,
         short_summary=short_summary,
+        title=title,
         key_points=key_points,
         events=events,
         chapters=chapters,

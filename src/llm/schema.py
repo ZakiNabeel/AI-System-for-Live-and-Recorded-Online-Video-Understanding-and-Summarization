@@ -53,6 +53,7 @@ class Summary:
     run_id: str
     full_summary: str
     short_summary: str
+    title: str = ""
     key_points: list[KeyPoint] = field(default_factory=list)
     events: list[DetectedEvent] = field(default_factory=list)
     chapters: list[Chapter] = field(default_factory=list)
@@ -135,6 +136,7 @@ def load_summary(path: Path) -> Summary:
         run_id=payload["run_id"],
         full_summary=payload["full_summary"],
         short_summary=payload["short_summary"],
+        title=payload.get("title", ""),
         key_points=key_points,
         events=events,
         chapters=chapters,

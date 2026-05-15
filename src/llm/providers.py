@@ -7,7 +7,7 @@ import logging
 import time
 from typing import Any, Protocol
 
-from tenacity import retry, stop_after_attempt, wait_exponential
+from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
 
 from src.llm.parsing import LLMOutputParseError, strip_and_parse_json
 
@@ -57,7 +57,7 @@ class AnthropicProvider:
         self.model = model
         LOGGER.info(f"Initialized AnthropicProvider with {model}")
 
-    @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10))
+    @retry(stop=stop_after_attempt(5), wait=wait_exponential(multiplier=2, min=4, max=60))
     def complete_json(
         self,
         system: str,
@@ -106,7 +106,7 @@ class OpenAIProvider:
         self.model = model
         LOGGER.info(f"Initialized OpenAIProvider with {model}")
 
-    @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10))
+    @retry(stop=stop_after_attempt(5), wait=wait_exponential(multiplier=2, min=4, max=60))
     def complete_json(
         self,
         system: str,
@@ -153,7 +153,7 @@ class OllamaProvider:
         self.base_url = base_url
         LOGGER.info(f"Initialized OllamaProvider with {model} at {base_url}")
 
-    @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10))
+    @retry(stop=stop_after_attempt(5), wait=wait_exponential(multiplier=2, min=4, max=60))
     def complete_json(
         self,
         system: str,
@@ -226,7 +226,7 @@ class GeminiProvider:
         self.model = model
         LOGGER.info(f"Initialized GeminiProvider with {model}")
 
-    @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10))
+    @retry(stop=stop_after_attempt(5), wait=wait_exponential(multiplier=2, min=4, max=60))
     def complete_json(
         self,
         system: str,
@@ -238,16 +238,29 @@ class GeminiProvider:
         """Call Gemini and parse a JSON response."""
         LOGGER.debug(f"Calling {self.model} (max_tokens={max_tokens})")
 
-        response = self._client.models.generate_content(
-            model=self.model,
-            contents=user,
-            config=self._types.GenerateContentConfig(
-                system_instruction=system,
-                response_mime_type="application/json",
-                temperature=temperature,
-                max_output_tokens=max_tokens,
-            ),
-        )
+        try:
+            response = self._client.models.generate_content(
+                model=self.model,
+                contents=user,
+                config=self._types.GenerateContentConfig(
+                    system_instruction=system,
+                    response_mime_type="application/json",
+                    temperature=temperature,
+                    max_output_tokens=max_tokens,
+                ),
+            )
+        except Exception as exc:
+            msg = str(exc)
+            # Extract retry delay from 429 response and honour it
+            if "429" in msg or "RESOURCE_EXHAUSTED" in msg:
+                import re
+                m = re.search(r"retry[^\d]*(\d+)", msg, re.IGNORECASE)
+                delay = int(m.group(1)) + 5 if m else 60
+                LOGGER.warning("Gemini rate limit hit — waiting %ds before retry…", delay)
+                time.sleep(delay)
+            else:
+                LOGGER.warning("Gemini API call failed (will retry): %s", exc)
+            raise
         text = (getattr(response, "text", "") or "").strip()
 
         meta = getattr(response, "usage_metadata", None)

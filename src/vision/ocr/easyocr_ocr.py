@@ -36,8 +36,8 @@ def ocr_easyocr(enhanced_path: Path, languages: list[str]) -> tuple[list[dict], 
         lines.append(
             {
                 "text": clean_text,
-                "confidence": scaled_confidence,
-                "bbox": (x0, y0, max(xs) - x0, max(ys) - y0),
+                "confidence": round(scaled_confidence, 4),
+                "bbox": [x0, y0, max(xs) - x0, max(ys) - y0],
                 "language": (languages or ["en"])[0],
             }
         )
@@ -48,5 +48,19 @@ def ocr_easyocr(enhanced_path: Path, languages: list[str]) -> tuple[list[dict], 
 @lru_cache(maxsize=4)
 def _reader(languages: tuple[str, ...]):
     import easyocr
+    import os
+    import sys
 
-    return easyocr.Reader(list(languages), gpu=False)
+    # Suppress Unicode progress bar output that crashes on Windows cp1252 terminals
+    old_stdout = sys.stdout
+    old_stderr = sys.stderr
+    try:
+        sys.stdout = open(os.devnull, "w", encoding="utf-8")
+        sys.stderr = open(os.devnull, "w", encoding="utf-8")
+        reader = easyocr.Reader(list(languages), gpu=False, verbose=False)
+    finally:
+        sys.stdout.close()
+        sys.stderr.close()
+        sys.stdout = old_stdout
+        sys.stderr = old_stderr
+    return reader

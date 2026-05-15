@@ -4,6 +4,7 @@ Combine them into a single coherent, high-level global summary.
 Output strict JSON:
 
 {
+  "title": "<5-10 word descriptive title for the video>",
   "full_summary": "3–6 paragraph narrative summary of the entire content",
   "short_summary": "1–2 sentence elevator pitch",
   "chapters": [

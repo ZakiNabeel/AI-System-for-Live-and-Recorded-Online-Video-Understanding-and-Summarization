@@ -105,7 +105,8 @@ def format_outputs(
 
     markdown_path.write_text(markdown_content, encoding="utf-8")
     html_path.write_text(html_content, encoding="utf-8")
-    json_path.write_text(json.dumps(report_json, indent=2, ensure_ascii=False), encoding="utf-8")
+    from src.json_utils import dumps as safe_dumps
+    json_path.write_text(safe_dumps(report_json, indent=2, ensure_ascii=False), encoding="utf-8")
     chapters_path.write_text(chapters_content, encoding="utf-8")
     report_card_path.write_text(report_card_content, encoding="utf-8")
 

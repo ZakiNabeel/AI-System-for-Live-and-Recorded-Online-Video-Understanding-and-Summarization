@@ -279,8 +279,9 @@ def _save_chunks(chunks: list[FusedDocument], output_path: Path) -> None:
         "chunks": [asdict(chunk) for chunk in chunks],
     }
 
+    from src.json_utils import dump as safe_dump
     with output_path.open("w", encoding="utf-8") as f:
-        json.dump(payload, f, indent=2, ensure_ascii=False)
+        safe_dump(payload, f, indent=2, ensure_ascii=False)
 
 
 def main() -> None:

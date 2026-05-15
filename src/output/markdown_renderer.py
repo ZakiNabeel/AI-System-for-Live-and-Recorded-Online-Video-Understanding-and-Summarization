@@ -18,8 +18,17 @@ def render_header(
     """Render header with metadata."""
     lines = []
 
-    # Title
-    lines.append(f"# Summary: Run {summary.run_id}")
+    # Title — prefer LLM title, then first chapter, then short summary, then run ID
+    title = summary.title.strip() if summary.title else None
+    if not title and summary.chapters:
+        title = summary.chapters[0].title
+    if not title and summary.short_summary:
+        first_sentence = summary.short_summary.split(".")[0].strip()
+        if len(first_sentence) > 10:
+            title = first_sentence
+    if not title:
+        title = f"Run {summary.run_id}"
+    lines.append(f"# {title}")
     lines.append("")
 
     # Metadata
